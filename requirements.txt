@@ -1,0 +1,6 @@
+pandas
+sqlalchemy
+dotenv
+psycopg2-binary
+anthropic
+openai

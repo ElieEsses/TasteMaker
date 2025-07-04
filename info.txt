@@ -1,0 +1,4 @@
+Update the README.md file with specific information about this project
+Add confidential information or unecessary files to the .gitignore
+Add required packages to the requirements.txt file
+Update run.sh with any modifications needed for the project to build and run
