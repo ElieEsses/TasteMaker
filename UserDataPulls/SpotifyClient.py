@@ -2,7 +2,7 @@ import requests
 import base64
 import time
 
-class SpotifyAPI:
+class SpotifyClient(StreamingClient):
     AUTH_URL = "https://accounts.spotify.com/api/token"
     API_URL = "https://api.spotify.com/v1"
 
