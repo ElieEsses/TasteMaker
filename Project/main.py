@@ -1,23 +1,28 @@
 import os
+import pandas as pd
 from StreamingClients.SpotifyClient import SpotifyClient
+from Modules.DBUtils import DBUtils
 
 from dotenv import load_dotenv
 load_dotenv()
 
-def main():
+db_utils = DBUtils()
+sqlite_conn = db_utils.create_sqlite_conn("Project/Data/taste-maker.db")
+features_df = db_utils.table_to_df(sqlite_conn, "audio_features")
 
+def main():
     spotify_client = SpotifyClient(
-        client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-        client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
-        redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
+        os.getenv("SPOTIFY_CLIENT_ID"), 
+        os.getenv("SPOTIFY_CLIENT_SECRET"),
+        os.getenv("SPOTIFY_REDIRECT_URI")
     )
 
-    # print(spotify_client.get_user_profile())
-    # print(spotify_client.get_top_tracks())
-    top_tracks = spotify_client.get_top_tracks(limit=50, time_range="long_term")
-    for track in top_tracks:
-        print(track['name'], "by", ", ".join(artist['name'] for artist in track['artists']))
-    # print(spotify_client.get_top_artists())
+    top_tracks = spotify_client.get_top_tracks(50, time_range="medium_term")
+    
+    for key, value in top_tracks[0].items():
+        print(f"{key}: {value}")
+
+
 
 
 if __name__ == "__main__":
