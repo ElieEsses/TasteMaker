@@ -1,71 +1,60 @@
 import os
 import pandas as pd
 import musicbrainzngs as mb
+import pickle
 from StreamingClients.SpotifyClient import SpotifyClient
+from Recommenders.BasicCooccurrence import BasicCooccurrence
+from DataHandler import DataHandler
 from Modules.DBUtils import DBUtils
-import sqlite3
+import sqlite3 as sq3
+from typing import Optional, Dict, List
+from scipy.sparse import load_npz
+from Factorizers.NMF_Factorizer import NMF_Factorizer
+from Factorizers.SVD_Factorizer import SVD_Factorizer
+from Clusterers.DBSCAN_Clusterer import DBSCAN_Clusterer
+from Clusterers.KMeans_Clusterer import KMeans_Clusterer
+from Recommenders.CosSim import CosSim
+from Recommenders.BasicCooccurrence import BasicCooccurrence
+from RefactorAndCluster import RefactorAndCluster
+from SparseMatrixBuilder import SparseMatrixBuilder
+
 
 
 from dotenv import load_dotenv
 load_dotenv()
 
-# db_utils = DBUtils()
-# sqlite_conn = db_utils.create_sqlite_conn("Project/Data/taste-maker.db")
-# features_df = db_utils.table_to_df(sqlite_conn, "audio_features")
-
-con = sqlite3.connect("Project/Data/taste_maker.db")  
+DB_PATH = "Project/Data/taste_maker.db"
+EMBEDDINGS_PATH = "/Users/elieesses/Desktop/Programming/TasteMaker/Project/Data/song_SVD_embeddings_100d.pkl"
+ID_INDEX = "/Users/elieesses/Desktop/Programming/TasteMaker/Project/Data/song_id_index.csv"
 
 def main():
-    spotify_client = SpotifyClient(
-        os.getenv("SPOTIFY_CLIENT_ID"), 
-        os.getenv("SPOTIFY_CLIENT_SECRET"),
-        os.getenv("SPOTIFY_REDIRECT_URI")
-    )
+    db_conn = sq3.connect(DB_PATH)
+    data_hander = DataHandler(db_conn)
 
-    top_tracks = spotify_client.get_top_tracks(50, time_range="medium_term")
-    
-    for track in top_tracks:
-        row = fetch_track(con, track['artists'][0]['name'], track['name'])
+    matrix_builder = SparseMatrixBuilder(db_conn, 'spotify_playlist_tracks')
+    # matrix_builder.build()
+    # matrix_builder.save_matrix('Project/Data/playlist_song_sparse_matrix.npz')
 
-        if not row.empty:
-            print(row)
-        else:
-            print(f"Track not found in database: {track['name']} by {track['artists'][0]['name']}")
+    sparse = matrix_builder.load_matrix('Project/Data/playlist_song_sparse_matrix.npz')
 
+    factorizer = SVD_Factorizer(n_components=6000)
+    embeddings = factorizer.fit_transform(sparse)
+    factorizer.save('Project/Data/playlist_song_embeddings.joblib')
 
+    # print(data_hander.get_id_from_song("dirty paws", "of monsters and men"))
 
+    # dirty_paws = 5470
 
+    # recommender = BasicCooccurrence(db_conn)
+    # recommender.recommend(5470)
 
-def get_mbid_from_isrc(isrc):
-    mb.set_useragent(
-        "TasteaMaker",        # app name
-        "0.1",               # version
-        "elieesses04@gmail.com"   # contact (can be blank but recommended)
-    )
+    # for rec in recs:
+    #     print(rec)
 
-    res = mb.get_recordings_by_isrc(isrc)
-
-    mbids = [rec["id"] for rec in res["isrc"]["recording-list"]]
-
-    return mbids[0] if mbids else None
-
-def fetch_track(con, artist, title):
-    sql = """
-    SELECT *
-      FROM features_lastfm
-     WHERE artist = ?  COLLATE NOCASE
-       AND title  = ? COLLATE NOCASE
-     LIMIT 1;
-    """
-    return pd.read_sql_query(sql, con, params=(artist, title))
+    # spotify_client = SpotifyClient(os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"))
 
 
-# isrc = "USUM71800057"
-# mbid = get_mbid_from_isrc(isrc)
-
-
-
-
+   
 
 if __name__ == "__main__":
     main()
