@@ -1,6 +1,7 @@
 from sklearn.decomposition import TruncatedSVD
 import joblib
 from Factorizers.Factorizer import Factorizer
+import pandas as pd
 
 class SVD_Factorizer(Factorizer):
     def __init__(self, n_components=100):
@@ -16,3 +17,9 @@ class SVD_Factorizer(Factorizer):
         if self.embeddings is None:
             raise ValueError("Model has not been fit yet.")
         joblib.dump(self.embeddings, path)
+
+    def load(self, path) -> pd.DataFrame:
+        data = joblib.load(path)
+        df = pd.DataFrame(data)
+
+        return df

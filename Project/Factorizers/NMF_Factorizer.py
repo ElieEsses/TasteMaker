@@ -1,6 +1,8 @@
 from sklearn.decomposition import NMF
 from scipy.sparse import csr_matrix
 from Factorizers.Factorizer import Factorizer
+import joblib
+import pandas as pd
 
 class NMF_Factorizer(Factorizer):
     def __init__(self, n_components=100):
@@ -18,3 +20,9 @@ class NMF_Factorizer(Factorizer):
         if self.embeddings is None:
             raise ValueError("Model has not been fit yet.")
         joblib.dump(self.embeddings, path)
+
+    def load(self, path) -> pd.DataFrame:
+        data = path
+        df = pd.DataFrame(data)
+
+        return df

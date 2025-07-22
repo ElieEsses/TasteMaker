@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import pandas as pd
 
 class Factorizer(ABC):
     @abstractmethod
@@ -7,4 +8,7 @@ class Factorizer(ABC):
 
     @abstractmethod
     def save(self, path):
+        pass
+
+    def load(self, path) -> pd.DataFrame:
         pass

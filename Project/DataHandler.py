@@ -93,11 +93,11 @@ class DataHandler:
         ))
         return self.cursor.lastrowid
 
-    def get_playlist_id(self, playlist_uri):
+    def get_playlist_id_from_uri(self, playlist_uri):
         self.cursor.execute("SELECT playlist_id FROM spotify_playlists WHERE playlist_uri = ?", (playlist_uri,))
         return self.cursor.fetchone()[0]
 
-    def get_song_id(self, spotify_uri):
+    def get_song_id_from_uri(self, spotify_uri):
         self.cursor.execute("SELECT id FROM spotify_songs WHERE spotify_uri = ?", (spotify_uri,))
         return self.cursor.fetchone()[0]
     
